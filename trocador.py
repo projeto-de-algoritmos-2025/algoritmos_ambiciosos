@@ -85,6 +85,10 @@ def main():
                 # Botão de calcular troco
                 if 520 <= event.pos[0] <= 650 and 40 <= event.pos[1] <= 72:
                     try:
+                        # Atualiza o estoque de moedas com o que está digitado nas caixas
+                        for i, box in enumerate(stock_boxes):
+                            coin_stock[i] = int(box["text"])
+
                         valor_compra = float(input_boxes["Valor da Compra"]["text"].replace(",", "."))
                         valor_recebido = float(input_boxes["Valor Recebido"]["text"].replace(",", "."))
                         troco = int(round((valor_recebido - valor_compra) * 100))
@@ -95,6 +99,10 @@ def main():
                             new_stock = coin_stock[:]
                             res = greedy_change(troco, new_stock)
                             if res:
+                                # Atualiza o estoque real após dar o troco
+                                coin_stock[:] = new_stock
+                                for i, box in enumerate(stock_boxes):
+                                    box["text"] = str(coin_stock[i])
                                 message = f"Troco: R${troco / 100:.2f}"
                                 result = res
                             else:
@@ -103,15 +111,6 @@ def main():
                     except ValueError:
                         message = "Erro nos valores inseridos."
                         result = []
-
-                # Botão de atualizar estoque
-                if 330 <= event.pos[0] <= 470 and 310 <= event.pos[1] <= 342:
-                    try:
-                        for i, box in enumerate(stock_boxes):
-                            coin_stock[i] = int(box["text"])
-                        message = "Estoque atualizado!"
-                    except ValueError:
-                        message = "Erro ao atualizar estoque!"
 
             elif event.type == simulador_trocador.KEYDOWN:
                 if active_box:
@@ -145,10 +144,6 @@ def main():
                 stock_boxes[i]["rect"], 2
             )
             draw_text(stock_boxes[i]["text"], (stock_boxes[i]["rect"].x + 5, stock_boxes[i]["rect"].y + 5))
-
-        # Botão de atualizar estoque
-        simulador_trocador.draw.rect(screen, RED, (330, 310, 140, 32))
-        draw_text("Atualizar Estoque", (340, 318), WHITE)
 
         # Resultado
         draw_text(message, (50, 320), RED if "Erro" in message or "não" in message.lower() else BLACK)
