@@ -12,16 +12,27 @@ screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Simulador de Troco - Algoritmo Guloso")
 manager = pygame_gui.UIManager(window_size)
 
-input_box_compra = pygame_gui.elements.UITextEntryLine(pygame.Rect((120, 50), (200, 36)), manager=manager)
-input_box_recebido = pygame_gui.elements.UITextEntryLine(pygame.Rect((430, 50), (200, 36)), manager=manager)
-button = pygame_gui.elements.UIButton(pygame.Rect((430, 100), (200, 36)), 'Calcular Troco', manager)
+input_box_compra = pygame_gui.elements.UITextEntryLine(
+    pygame.Rect((120, 50), (200, 36)), manager=manager
+)
+input_box_recebido = pygame_gui.elements.UITextEntryLine(
+    pygame.Rect((430, 50), (200, 36)), manager=manager
+)
+button = pygame_gui.elements.UIButton(
+    pygame.Rect((430, 100), (200, 36)), "Calcular Troco", manager
+)
 
 stock_boxes = [
-    {"rect": pygame.Rect(320, 170 + i * 45, 60, 36), "text": str(initial_stock[i]), "index": i}
+    {
+        "rect": pygame.Rect(320, 170 + i * 45, 60, 36),
+        "text": str(initial_stock[i]),
+        "index": i,
+    }
     for i in range(len(initial_stock))
 ]
 coin_stock = initial_stock[:]
 active_stock_box = None
+
 
 def main():
     global active_stock_box, coin_stock
@@ -43,12 +54,17 @@ def main():
             manager.process_events(event)
 
             if event.type == pygame.USEREVENT:
-                if event.user_type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == button:
+                if (
+                    event.user_type == pygame_gui.UI_BUTTON_PRESSED
+                    and event.ui_element == button
+                ):
                     try:
                         for i, box in enumerate(stock_boxes):
                             coin_stock[i] = int(box["text"])
                         compra = float(input_box_compra.get_text().replace(",", "."))
-                        recebido = float(input_box_recebido.get_text().replace(",", "."))
+                        recebido = float(
+                            input_box_recebido.get_text().replace(",", ".")
+                        )
                         troco = int(round((recebido - compra) * 100))
                         if troco < 0:
                             message = "Valor recebido é menor!"
@@ -85,7 +101,9 @@ def main():
 
         draw_text(screen, "Valor da Compra:", (120, 25), font_obj=fonts["font"])
         draw_text(screen, "Valor Recebido:", (430, 25), font_obj=fonts["font"])
-        draw_text(screen, "Estoque de Cédulas e Moedas:", (80, 120), font_obj=fonts["large"])
+        draw_text(
+            screen, "Estoque de Cédulas e Moedas:", (80, 120), font_obj=fonts["large"]
+        )
 
         for i, label in enumerate(all_labels):
             y = 180 + i * 45
@@ -95,16 +113,26 @@ def main():
 
         resultado_x, resultado_y = 430, 160
         is_erro = any(p in message.lower() for p in ["erro", "não", "menor"])
-        draw_text(screen, message, (resultado_x, resultado_y),
-                  RED if is_erro else GREEN,
-                  font_obj=fonts["small"] if is_erro else fonts["large"])
+        draw_text(
+            screen,
+            message,
+            (resultado_x, resultado_y),
+            RED if is_erro else GREEN,
+            font_obj=fonts["small"] if is_erro else fonts["large"],
+        )
 
         if result:
             for i, (coin, count) in enumerate(result):
-                draw_text(screen, f"{count} x {coin}", (resultado_x, resultado_y + 40 + i * 30), font_obj=fonts["font"])
+                draw_text(
+                    screen,
+                    f"{count} x {coin}",
+                    (resultado_x, resultado_y + 40 + i * 30),
+                    font_obj=fonts["font"],
+                )
 
         manager.draw_ui(screen)
         pygame.display.flip()
+
 
 if __name__ == "__main__":
     main()

@@ -2,6 +2,7 @@
 
 from constants import all_values, all_labels
 
+
 def greedy_change(value, stock):
     result = []
     for i, unit in enumerate(all_values):
