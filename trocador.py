@@ -29,6 +29,17 @@ input_boxes = {
 
 active_box = None
 
+# Inputs para estoque de moedas
+stock_boxes = []
+for i, label in enumerate(coin_labels):
+    stock_boxes.append({
+        "rect": simulador_trocador.Rect(250, 130 + i * 30, 60, 28),
+        "text": str(coin_stock[i]),
+        "index": i
+    })
+
+active_stock_box = None
+
 def draw_text(text, pos, color=BLACK):
     screen.blit(font.render(text, True, color), pos)
 
@@ -47,7 +58,7 @@ def greedy_change(value, stock):
     return result
 
 def main():
-    global active_box
+    global active_box, active_stock_box, coin_stock
     clock = simulador_trocador.time.Clock()
     message = ""
     result = []
@@ -63,9 +74,13 @@ def main():
 
             elif event.type == simulador_trocador.MOUSEBUTTONDOWN:
                 active_box = None
+                active_stock_box = None
                 for label, box in input_boxes.items():
                     if box["rect"].collidepoint(event.pos):
                         active_box = label
+                for box in stock_boxes:
+                    if box["rect"].collidepoint(event.pos):
+                        active_stock_box = box
 
                 # Botão de calcular troco
                 if 520 <= event.pos[0] <= 650 and 40 <= event.pos[1] <= 72:
@@ -89,11 +104,26 @@ def main():
                         message = "Erro nos valores inseridos."
                         result = []
 
-            elif event.type == simulador_trocador.KEYDOWN and active_box:
-                if event.key == simulador_trocador.K_BACKSPACE:
-                    input_boxes[active_box]["text"] = input_boxes[active_box]["text"][:-1]
-                else:
-                    input_boxes[active_box]["text"] += event.unicode
+                # Botão de atualizar estoque
+                if 330 <= event.pos[0] <= 470 and 310 <= event.pos[1] <= 342:
+                    try:
+                        for i, box in enumerate(stock_boxes):
+                            coin_stock[i] = int(box["text"])
+                        message = "Estoque atualizado!"
+                    except ValueError:
+                        message = "Erro ao atualizar estoque!"
+
+            elif event.type == simulador_trocador.KEYDOWN:
+                if active_box:
+                    if event.key == simulador_trocador.K_BACKSPACE:
+                        input_boxes[active_box]["text"] = input_boxes[active_box]["text"][:-1]
+                    else:
+                        input_boxes[active_box]["text"] += event.unicode
+                elif active_stock_box:
+                    if event.key == simulador_trocador.K_BACKSPACE:
+                        active_stock_box["text"] = active_stock_box["text"][:-1]
+                    elif event.unicode.isdigit():
+                        active_stock_box["text"] += event.unicode
 
         # Desenha campos de texto
         for i, (label, box) in enumerate(input_boxes.items()):
@@ -108,7 +138,17 @@ def main():
         # Estoque de moedas
         draw_text("Estoque de Moedas:", (50, 100))
         for i, label in enumerate(coin_labels):
-            draw_text(f"{label}: {coin_stock[i]} unidades", (50, 130 + i * 30))
+            draw_text(f"{label}:", (50, 130 + i * 30))
+            simulador_trocador.draw.rect(
+                screen,
+                GRAY if active_stock_box == stock_boxes[i] else BLACK,
+                stock_boxes[i]["rect"], 2
+            )
+            draw_text(stock_boxes[i]["text"], (stock_boxes[i]["rect"].x + 5, stock_boxes[i]["rect"].y + 5))
+
+        # Botão de atualizar estoque
+        simulador_trocador.draw.rect(screen, RED, (330, 310, 140, 32))
+        draw_text("Atualizar Estoque", (340, 318), WHITE)
 
         # Resultado
         draw_text(message, (50, 320), RED if "Erro" in message or "não" in message.lower() else BLACK)
