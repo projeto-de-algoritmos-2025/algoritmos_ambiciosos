@@ -3,7 +3,7 @@
 import pygame
 import pygame_gui
 import sys
-from constants import *
+from constants import all_labels, all_colors, initial_stock, window_size, fonts
 from coin_logic import greedy_change
 from draw_utils import *
 
@@ -17,10 +17,10 @@ input_box_recebido = pygame_gui.elements.UITextEntryLine(pygame.Rect((430, 50), 
 button = pygame_gui.elements.UIButton(pygame.Rect((430, 100), (200, 36)), 'Calcular Troco', manager)
 
 stock_boxes = [
-    {"rect": pygame.Rect(320, 170 + i * 45, 60, 36), "text": str(initial_coin_stock[i]), "index": i}
-    for i in range(len(initial_coin_stock))
+    {"rect": pygame.Rect(320, 170 + i * 45, 60, 36), "text": str(initial_stock[i]), "index": i}
+    for i in range(len(initial_stock))
 ]
-coin_stock = initial_coin_stock[:]
+coin_stock = initial_stock[:]
 active_stock_box = None
 
 def main():
@@ -85,11 +85,11 @@ def main():
 
         draw_text(screen, "Valor da Compra:", (120, 25), font_obj=fonts["font"])
         draw_text(screen, "Valor Recebido:", (430, 25), font_obj=fonts["font"])
-        draw_text(screen, "Estoque de Moedas:", (80, 120), font_obj=fonts["large"])
+        draw_text(screen, "Estoque de Cédulas e Moedas:", (80, 120), font_obj=fonts["large"])
 
-        for i, label in enumerate(coin_labels):
+        for i, label in enumerate(all_labels):
             y = 180 + i * 45
-            draw_coin_icon(screen, 100, y + 18, coin_colors[i])
+            draw_coin_icon(screen, 100, y + 18, all_colors[i])
             draw_text(screen, f"{label}:", (130, y + 7), font_obj=fonts["font"])
             draw_input_box(screen, stock_boxes[i], active_stock_box == stock_boxes[i])
 

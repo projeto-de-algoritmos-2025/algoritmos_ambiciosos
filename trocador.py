@@ -3,7 +3,7 @@ import pygame_gui
 import sys
 
 pygame.init()
-window_size = (750, 550)
+window_size = (750, 760)
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Simulador de Troco - Algoritmo Guloso")
 manager = pygame_gui.UIManager(window_size)
@@ -12,13 +12,35 @@ font = pygame.font.SysFont("arial", 24)
 large_font = pygame.font.SysFont("arial", 28, bold=True)
 small_font = pygame.font.SysFont("arial", 20)
 
-
-# Moedas disponíveis no Brasil
+bills = [20000, 10000, 5000, 2000, 1000, 500, 200]
+bill_labels = ["R$200,00", "R$100,00", "R$50,00", "R$20,00", "R$10,00", "R$5,00", "R$2,00"]
+bill_colors = [
+    (0, 128, 128),
+    (0, 100, 0),
+    (139, 69, 19),
+    (255, 140, 0),
+    (0, 0, 205),
+    (255, 0, 0),
+    (128, 0, 128)
+]
 coins = [100, 50, 25, 10, 5, 1]
 coin_labels = ["R$1,00", "R$0,50", "R$0,25", "R$0,10", "R$0,05", "R$0,01"]
-coin_stock = [10, 10, 10, 10, 10, 10]
+coin_colors = [
+    (255, 215, 0),
+    (192, 192, 192),
+    (205, 127, 50),
+    (135, 206, 250),
+    (255, 182, 193),
+    (211, 211, 211)
+]
 
-# Cores
+all_values = bills + coins
+all_labels = bill_labels + coin_labels
+all_colors = bill_colors + coin_colors
+initial_bill_stock = [10] * len(bills)
+initial_coin_stock = [10] * len(coins)
+all_stock = initial_bill_stock + initial_coin_stock
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (220, 220, 220)
@@ -30,7 +52,6 @@ HIGHLIGHT = (100, 149, 237)
 BOX_COLOR = (255, 255, 255)
 BORDER_COLOR = (150, 150, 150)
 
-# Inputs usando pygame_gui
 input_box_compra = pygame_gui.elements.UITextEntryLine(
     relative_rect=pygame.Rect((120, 50), (200, 36)), manager=manager
 )
@@ -42,19 +63,19 @@ input_box_recebido = pygame_gui.elements.UITextEntryLine(
 input_box_recebido.set_text('')
 
 button = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((430, 100), (200, 36)), 
+    relative_rect=pygame.Rect((500, 120), (200, 36)), 
     text='Calcular Troco',
     manager=manager
 )
 
-# Estoque
 stock_boxes = []
-for i, label in enumerate(coin_labels):
+for i, label in enumerate(all_labels):
     stock_boxes.append({
         "rect": pygame.Rect(320, 170 + i * 45, 60, 36),
-        "text": str(coin_stock[i]),
+        "text": str(all_stock[i]),
         "index": i
     })
+current_stock = all_stock[:]
 active_stock_box = None
 
 def draw_gradient_background():
@@ -67,7 +88,7 @@ def draw_gradient_background():
         pygame.draw.line(screen, color, (0, y), (window_size[0], y))
 
 def draw_panel():
-    panel_rect = pygame.Rect(40, 20, 670, 500)
+    panel_rect = pygame.Rect(40, 20, 670, 900)
     pygame.draw.rect(screen, (255, 255, 255, 230), panel_rect, border_radius=18)
     pygame.draw.rect(screen, BORDER_COLOR, panel_rect, 3, border_radius=18)
 
@@ -81,14 +102,14 @@ def draw_text(text, pos, color=BLACK, font_obj=font):
 
 def greedy_change(value, stock):
     result = []
-    for i, coin in enumerate(coins):
+    for i, unit in enumerate(all_values):
         count = 0
-        while coin <= value and stock[i] > 0:
-            value -= coin
+        while unit <= value and stock[i] > 0:
+            value -= unit
             stock[i] -= 1
             count += 1
         if count > 0:
-            result.append((coin_labels[i], count))
+            result.append((all_labels[i], count))
     if value > 0:
         return None
     return result
@@ -99,20 +120,10 @@ def draw_input_box(box, active=False):
     draw_text(box["text"], (box["rect"].x + 10, box["rect"].y + 7))
 
 def main():
-    global active_stock_box, coin_stock
+    global active_stock_box, current_stock
     clock = pygame.time.Clock()
     message = ""
     result = []
-
-    # Cores para ícones das moedas
-    coin_colors = [
-        (255, 215, 0),     # Dourado
-        (192, 192, 192),   # Prata
-        (205, 127, 50),    # Bronze
-        (135, 206, 250),   # Azul claro
-        (255, 182, 193),   # Rosa claro
-        (211, 211, 211)    # Cinza claro
-    ]
 
     running = True
     while running:
@@ -131,7 +142,7 @@ def main():
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == button:
                     try:
                         for i, box in enumerate(stock_boxes):
-                            coin_stock[i] = int(box["text"])
+                            current_stock[i] = int(box["text"])
 
                         valor_compra = float(input_box_compra.get_text().replace(",", "."))
                         valor_recebido = float(input_box_recebido.get_text().replace(",", "."))
@@ -140,12 +151,12 @@ def main():
                             message = "Valor recebido é menor!"
                             result = []
                         else:
-                            new_stock = coin_stock[:]
+                            new_stock = current_stock[:]
                             res = greedy_change(troco, new_stock)
                             if res:
-                                coin_stock[:] = new_stock
+                                current_stock[:] = new_stock
                                 for i, box in enumerate(stock_boxes):
-                                    box["text"] = str(coin_stock[i])
+                                    box["text"] = str(current_stock[i])
                                 message = f"Troco: R${troco / 100:.2f}"
                                 result = res
                             else:
@@ -169,25 +180,19 @@ def main():
 
         manager.update(time_delta)
 
-        # Labels dos campos de entrada
         draw_text("Valor da Compra:", (120, 25), font_obj=font)
         draw_text("Valor Recebido:", (430, 25), font_obj=font)
 
-        # Estoque de moedas
-        draw_text("Estoque de Moedas:", (80, 120), font_obj=large_font)
-        for i, label in enumerate(coin_labels):
+        draw_text("Estoque de Cédulas e Moedas", (80, 120), font_obj=large_font)
+        for i, label in enumerate(all_labels):
             y = 180 + i * 45
-            draw_coin_icon(100, y + 18, coin_colors[i])
+            draw_coin_icon(100, y + 18, all_colors[i])
             draw_text(f"{label}:", (130, y + 7), font_obj=font)
             draw_input_box(stock_boxes[i], active_stock_box == stock_boxes[i])
 
-        # Resultado
-        # Resultado (exibido abaixo do botão)
-        # Posição para exibir os resultados à direita, abaixo do botão
-        resultado_x = 430  # Alinha com botão
-        resultado_y = 160  # Logo abaixo do botão "Calcular Troco"
+        resultado_x = 430
+        resultado_y = 160
 
-        # Mensagem principal
         is_erro = any(palavra in message.lower() for palavra in ["erro", "não", "menor"])
         draw_text(
             message,
@@ -196,14 +201,11 @@ def main():
             font_obj=small_font if is_erro else large_font
         )
 
-        # Exibir moedas em coluna abaixo da mensagem
         if result:
             start_y = resultado_y + 40
             line_height = 30
-            for i, (coin, count) in enumerate(result):
-                draw_text(f"{count} x {coin}", (resultado_x, start_y + i * line_height), font_obj=font)
-
-
+            for i, (label, count) in enumerate(result):
+                draw_text(f"{count} x {label}", (resultado_x, start_y + i * line_height), font_obj=font)
 
         manager.draw_ui(screen)
         pygame.display.flip()
