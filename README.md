@@ -38,7 +38,7 @@ pip install pygame
 Salve o arquivo [`trocador.py`](trocador.py) e execute:
 
 ```bash
-python trocador.py
+cd coin_change_simulator && python3 main.py
 ```
 
 Certifique-se de estar na pasta onde o arquivo está localizado.
