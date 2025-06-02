@@ -1,47 +1,63 @@
-import pygame as simulador_trocador
+import pygame
+import pygame_gui
 import sys
 
-simulador_trocador.init()
-font = simulador_trocador.font.SysFont(None, 24)
+pygame.init()
+window_size = (750, 550)
+screen = pygame.display.set_mode(window_size)
+pygame.display.set_caption("Simulador de Troco - Algoritmo Guloso")
+manager = pygame_gui.UIManager(window_size)
+
+font = pygame.font.SysFont("arial", 24)
+large_font = pygame.font.SysFont("arial", 28, bold=True)
 
 # Moedas disponíveis no Brasil
 coins = [100, 50, 25, 10, 5, 1]
 coin_labels = ["R$1,00", "R$0,50", "R$0,25", "R$0,10", "R$0,05", "R$0,01"]
-coin_stock = [10, 10, 10, 10, 10, 10]  # Quantidade inicial de cada moeda
+coin_stock = [10, 10, 10, 10, 10, 10]
 
 # Cores
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY = (180, 180, 180)
-GREEN = (0, 200, 0)
+GRAY = (220, 220, 220)
+DARK_GRAY = (160, 160, 160)
+GREEN = (34, 177, 76)
 RED = (200, 0, 0)
+BG_COLOR = (245, 245, 250)
+HIGHLIGHT = (100, 149, 237)
+BOX_COLOR = (255, 255, 255)
+BORDER_COLOR = (150, 150, 150)
 
-# Janela
-WIDTH, HEIGHT = 700, 500
-screen = simulador_trocador.display.set_mode((WIDTH, HEIGHT))
-simulador_trocador.display.set_caption("Simulador de Troco - Algoritmo Guloso")
+# Inputs usando pygame_gui
+input_box_compra = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((60, 40), (200, 36)), manager=manager
+)
+input_box_compra.set_text('')
 
-# Inputs
-input_boxes = {
-    "Valor da Compra": {"rect": simulador_trocador.Rect(50, 40, 200, 32), "text": ""},
-    "Valor Recebido": {"rect": simulador_trocador.Rect(300, 40, 200, 32), "text": ""},
-}
+input_box_recebido = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((300, 40), (200, 36)), manager=manager
+)
+input_box_recebido.set_text('')
 
-active_box = None
+button = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((540, 40), (160, 36)),
+    text='Calcular Troco',
+    manager=manager
+)
 
-# Inputs para estoque de moedas
+# Estoque
 stock_boxes = []
 for i, label in enumerate(coin_labels):
     stock_boxes.append({
-        "rect": simulador_trocador.Rect(250, 130 + i * 30, 60, 28),
+        "rect": pygame.Rect(280, 130 + i * 35, 60, 30),
         "text": str(coin_stock[i]),
         "index": i
     })
-
 active_stock_box = None
 
-def draw_text(text, pos, color=BLACK):
-    screen.blit(font.render(text, True, color), pos)
+def draw_text(text, pos, color=BLACK, font_obj=font):
+    text_surface = font_obj.render(text, True, color)
+    screen.blit(text_surface, pos)
 
 def greedy_change(value, stock):
     result = []
@@ -54,43 +70,40 @@ def greedy_change(value, stock):
         if count > 0:
             result.append((coin_labels[i], count))
     if value > 0:
-        return None  # Não foi possível fazer o troco
+        return None
     return result
 
+def draw_input_box(box, active=False):
+    pygame.draw.rect(screen, BOX_COLOR, box["rect"])
+    pygame.draw.rect(screen, HIGHLIGHT if active else BORDER_COLOR, box["rect"], 2)
+    draw_text(box["text"], (box["rect"].x + 6, box["rect"].y + 6))
+
 def main():
-    global active_box, active_stock_box, coin_stock
-    clock = simulador_trocador.time.Clock()
+    global active_stock_box, coin_stock
+    clock = pygame.time.Clock()
     message = ""
     result = []
 
-    while True:
-        screen.fill(WHITE)
+    running = True
+    while running:
+        time_delta = clock.tick(30) / 1000.0
+        screen.fill(BG_COLOR)
 
-        # Eventos
-        for event in simulador_trocador.event.get():
-            if event.type == simulador_trocador.QUIT:
-                simulador_trocador.quit()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
                 sys.exit()
+            manager.process_events(event)
 
-            elif event.type == simulador_trocador.MOUSEBUTTONDOWN:
-                active_box = None
-                active_stock_box = None
-                for label, box in input_boxes.items():
-                    if box["rect"].collidepoint(event.pos):
-                        active_box = label
-                for box in stock_boxes:
-                    if box["rect"].collidepoint(event.pos):
-                        active_stock_box = box
-
-                # Botão de calcular troco
-                if 520 <= event.pos[0] <= 650 and 40 <= event.pos[1] <= 72:
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED and event.ui_element == button:
                     try:
-                        # Atualiza o estoque de moedas com o que está digitado nas caixas
                         for i, box in enumerate(stock_boxes):
                             coin_stock[i] = int(box["text"])
 
-                        valor_compra = float(input_boxes["Valor da Compra"]["text"].replace(",", "."))
-                        valor_recebido = float(input_boxes["Valor Recebido"]["text"].replace(",", "."))
+                        valor_compra = float(input_box_compra.get_text().replace(",", "."))
+                        valor_recebido = float(input_box_recebido.get_text().replace(",", "."))
                         troco = int(round((valor_recebido - valor_compra) * 100))
                         if troco < 0:
                             message = "Valor recebido é menor que a compra!"
@@ -99,7 +112,6 @@ def main():
                             new_stock = coin_stock[:]
                             res = greedy_change(troco, new_stock)
                             if res:
-                                # Atualiza o estoque real após dar o troco
                                 coin_stock[:] = new_stock
                                 for i, box in enumerate(stock_boxes):
                                     box["text"] = str(coin_stock[i])
@@ -112,46 +124,37 @@ def main():
                         message = "Erro nos valores inseridos."
                         result = []
 
-            elif event.type == simulador_trocador.KEYDOWN:
-                if active_box:
-                    if event.key == simulador_trocador.K_BACKSPACE:
-                        input_boxes[active_box]["text"] = input_boxes[active_box]["text"][:-1]
-                    else:
-                        input_boxes[active_box]["text"] += event.unicode
-                elif active_stock_box:
-                    if event.key == simulador_trocador.K_BACKSPACE:
-                        active_stock_box["text"] = active_stock_box["text"][:-1]
-                    elif event.unicode.isdigit():
-                        active_stock_box["text"] += event.unicode
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                active_stock_box = None
+                for box in stock_boxes:
+                    if box["rect"].collidepoint(event.pos):
+                        active_stock_box = box
 
-        # Desenha campos de texto
-        for i, (label, box) in enumerate(input_boxes.items()):
-            simulador_trocador.draw.rect(screen, GRAY if active_box == label else BLACK, box["rect"], 2)
-            draw_text(label, (box["rect"].x, box["rect"].y - 20))
-            draw_text(box["text"], (box["rect"].x + 5, box["rect"].y + 5))
+            if event.type == pygame.KEYDOWN and active_stock_box:
+                if event.key == pygame.K_BACKSPACE:
+                    active_stock_box["text"] = active_stock_box["text"][:-1]
+                elif event.unicode.isdigit():
+                    active_stock_box["text"] += event.unicode
 
-        # Botão de calcular
-        simulador_trocador.draw.rect(screen, GREEN, (520, 40, 130, 32))
-        draw_text("Calcular Troco", (530, 48), WHITE)
+        manager.update(time_delta)
+
+        # Labels dos campos de entrada
+        draw_text("Valor da Compra:", (60, 15), font_obj=font)
+        draw_text("Valor Recebido:", (300, 15), font_obj=font)
 
         # Estoque de moedas
-        draw_text("Estoque de Moedas:", (50, 100))
+        draw_text("Estoque de Moedas:", (40, 100), font_obj=large_font)
         for i, label in enumerate(coin_labels):
-            draw_text(f"{label}:", (50, 130 + i * 30))
-            simulador_trocador.draw.rect(
-                screen,
-                GRAY if active_stock_box == stock_boxes[i] else BLACK,
-                stock_boxes[i]["rect"], 2
-            )
-            draw_text(stock_boxes[i]["text"], (stock_boxes[i]["rect"].x + 5, stock_boxes[i]["rect"].y + 5))
+            draw_text(f"{label}:", (40, 130 + i * 35))
+            draw_input_box(stock_boxes[i], active_stock_box == stock_boxes[i])
 
         # Resultado
-        draw_text(message, (50, 320), RED if "Erro" in message or "não" in message.lower() else BLACK)
+        draw_text(message, (40, 390), RED if "Erro" in message or "não" in message.lower() else BLACK, font_obj=large_font)
         for i, (coin, count) in enumerate(result):
-            draw_text(f"{count} x {coin}", (50, 350 + i * 25))
+            draw_text(f"{count} x {coin}", (40, 420 + i * 25))
 
-        simulador_trocador.display.flip()
-        clock.tick(30)
+        manager.draw_ui(screen)
+        pygame.display.flip()
 
 if __name__ == "__main__":
     main()
