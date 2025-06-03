@@ -53,7 +53,7 @@ HIGHLIGHT = (100, 149, 237)
 BOX_COLOR = (255, 255, 255)
 BORDER_COLOR = (150, 150, 150)
 
-window_size = (750, 550)
+window_size = (750, 800)
 
 fonts = {
     "font": pygame.font.SysFont("arial", 24),

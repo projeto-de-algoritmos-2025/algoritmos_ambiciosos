@@ -22,7 +22,7 @@ def draw_gradient_background(screen):
 
 
 def draw_panel(screen):
-    panel_rect = pygame.Rect(40, 20, 670, 500)
+    panel_rect = pygame.Rect(40, 20, 670, 1050)  # altura aumentada
     pygame.draw.rect(screen, (255, 255, 255, 230), panel_rect, border_radius=18)
     pygame.draw.rect(screen, BORDER_COLOR, panel_rect, 3, border_radius=18)
 

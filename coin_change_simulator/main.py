@@ -11,7 +11,7 @@ pygame.init()
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Simulador de Troco - Algoritmo Guloso")
 manager = pygame_gui.UIManager(window_size)
-
+window_size = (750, 800)
 input_box_compra = pygame_gui.elements.UITextEntryLine(
     pygame.Rect((120, 50), (200, 36)), manager=manager
 )
@@ -19,9 +19,8 @@ input_box_recebido = pygame_gui.elements.UITextEntryLine(
     pygame.Rect((430, 50), (200, 36)), manager=manager
 )
 button = pygame_gui.elements.UIButton(
-    pygame.Rect((430, 100), (200, 36)), "Calcular Troco", manager
+    pygame.Rect((500, 120), (200, 36)), "Calcular Troco", manager
 )
-
 stock_boxes = [
     {
         "rect": pygame.Rect(320, 170 + i * 45, 60, 36),
@@ -133,6 +132,6 @@ def main():
         manager.draw_ui(screen)
         pygame.display.flip()
 
-
+window_size = (750, 800)
 if __name__ == "__main__":
     main()
