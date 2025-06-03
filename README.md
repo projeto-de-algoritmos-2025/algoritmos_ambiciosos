@@ -1,4 +1,4 @@
-# 💰 Simulador de Troco — Algoritmo Guloso
+# 💰 Simulador de Troco — Algoritmo Coin Change
 
 *Projeto de Algoritmos Ambiciosos — Simulação interativa de troco com Pygame*
 
@@ -17,7 +17,7 @@
 
 ## Sobre o projeto
 
-Este é um simulador interativo de troco utilizando o **algoritmo coin change**. O usuário pode informar o valor da compra, o valor recebido e ajustar o estoque de cédulas e moedas disponíveis. O sistema calcula automaticamente o troco ideal, considerando o estoque, e exibe o resultado na tela.
+Este é um simulador interativo de troco utilizando o **algoritmo Coin Change**. O usuário pode informar o valor da compra, o valor recebido e ajustar o estoque de cédulas e moedas disponíveis. O sistema calcula automaticamente o troco ideal, considerando o estoque, e exibe o resultado na tela.
 
 A interface gráfica foi desenvolvida em Python com as bibliotecas **Pygame** e **pygame_gui**.
 
@@ -62,7 +62,7 @@ A interface permite:
 
 ## Observações
 
-- O algoritmo utilizado é o coin change, sempre tentando usar as cédulas/moedas de maior valor disponíveis.
+- O algoritmo utilizado é o Coin Change, sempre tentando usar as cédulas/moedas de maior valor disponíveis.
 - Caso não seja possível fornecer o troco com o estoque atual, uma mensagem de erro será exibida.
 - Os valores são informados em reais (R$), com suporte a centavos.
 - O estoque de cada denominação pode ser alterado manualmente a qualquer momento.
