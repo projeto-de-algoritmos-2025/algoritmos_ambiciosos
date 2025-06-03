@@ -11,7 +11,7 @@
 ## 📝 Entregas
 | Algoritmos Ambiciosos |
 |-----------------------|
-| [Apresentação]()      |
+| [Apresentação](https://youtu.be/nmkf1VaMNkM)      |
 
 ---
 
